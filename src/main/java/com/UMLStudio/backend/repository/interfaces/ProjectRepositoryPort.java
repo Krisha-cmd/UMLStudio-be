@@ -1,7 +1,9 @@
 package com.UMLStudio.backend.repository;
 
+import com.UMLStudio.backend.dto.ProjectResponse;
 import com.UMLStudio.backend.model.Project;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 

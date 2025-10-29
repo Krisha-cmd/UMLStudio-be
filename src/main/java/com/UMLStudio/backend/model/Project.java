@@ -7,12 +7,14 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 @Entity
 @Table(name = "projects")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Project extends JsonNode {
+public class Project{
 
     public Project(String name, String description) {
         this.name=name;
@@ -21,7 +23,8 @@ public class Project extends JsonNode {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "project_id")
+    private Long projectId;
 
     @Column(nullable = false)
     private String name;
@@ -31,6 +34,9 @@ public class Project extends JsonNode {
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
+
+    @Column(name = "project_details")
+    private JsonNode projectDetails;
 
 }
 
