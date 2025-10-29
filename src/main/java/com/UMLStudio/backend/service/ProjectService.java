@@ -36,6 +36,7 @@ public class ProjectService implements ProjectServicePort {
 
     @Override
     public ProjectResponse getProject(Long id) {
+        
         Project project = projectRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Project not found with id " + id));
         return mapToResponse(project);
