@@ -4,27 +4,29 @@ import com.UMLStudio.backend.dto.ProjectRequest;
 import com.UMLStudio.backend.dto.ProjectResponse;
 import com.UMLStudio.backend.exception.ResourceNotFoundException;
 import com.UMLStudio.backend.model.Project;
-import com.UMLStudio.backend.repository.ProjectRepository;
+import com.UMLStudio.backend.repository.ProjectRepositoryPort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class ProjectService {
+public class ProjectService implements ProjectServicePort {
 
-    private final ProjectRepository projectRepository;
+    private final ProjectRepositoryPort projectRepository;
 
-    public ProjectService(ProjectRepository projectRepository) {
+    public ProjectService(ProjectRepositoryPort projectRepository) {
         this.projectRepository = projectRepository;
     }
 
+    @Override
     public ProjectResponse createProject(ProjectRequest request) {
         Project project = new Project(request.getName(), request.getDescription());
         Project saved = projectRepository.save(project);
         return mapToResponse(saved);
     }
 
+    @Override
     public List<ProjectResponse> listProjects() {
         return projectRepository.findAll()
                 .stream()
@@ -32,6 +34,7 @@ public class ProjectService {
                 .collect(Collectors.toList());
     }
 
+    @Override
     public ProjectResponse getProject(Long id) {
         Project project = projectRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Project not found with id " + id));
@@ -42,4 +45,3 @@ public class ProjectService {
         return new ProjectResponse(p.getId(), p.getName(), p.getDescription(), p.getCreatedAt());
     }
 }
-

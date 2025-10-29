@@ -2,13 +2,13 @@ UMLStudio — Backend (Spring Boot)
 
 Overview
 --------
-This repository contains the backend for UMLStudio — a small Spring Boot application that demonstrates a simple layered architecture (Controller → Service → Repository) for managing "projects".
+This repository contains the backend for UMLStudio — a small Spring Boot application that demonstrates a simple layered architecture (Controller → Service → Repository) for managing "projects" and now includes basic JWT-based authentication (register/login).
 
 Technology
 ----------
 - Java 21
 - Spring Boot (web, validation, data-jpa)
-- H2 (runtime) and MySQL connector available
+- H2 (runtime) and MySQL connector available (MySQL config commented)
 - Maven wrapper (mvnw)
 
 Project structure (important files/folders)
@@ -16,63 +16,51 @@ Project structure (important files/folders)
 - src/main/java/com/UMLStudio/backend/
   - BackendApplication.java
     - Purpose: Spring Boot application entry point. Boots the application.
-    - Collaborators: Spring Boot runtime.
 
   - controller/
-    - ProjectController.java
-      - Purpose: REST controller exposing project-related HTTP endpoints under `/api/projects`.
-      - Responsibilities: Accept and validate incoming HTTP requests (uses `@Valid`), map requests to service calls, return appropriate HTTP responses and status codes.
-      - Collaborators: `ProjectService`, DTOs (`ProjectRequest`, `ProjectResponse`).
+    - ProjectController.java — REST controller for project endpoints.
+    - AuthController.java
+      - Purpose: Exposes authentication endpoints under `/auth` (register, login, isUserLoggedIn).
+      - Collaborators: `AuthService`, `JwtUtil`.
 
   - service/
-    - ProjectService.java
-      - Purpose: Application/business layer for project operations.
-      - Responsibilities: Create projects, list all projects, fetch a single project. Map entity <-> DTO.
-      - Collaborators: `ProjectRepository`, model `Project`, DTOs (`ProjectRequest`, `ProjectResponse`), `ResourceNotFoundException`.
+    - ProjectService.java — business logic for projects.
+    - AuthService.java
+      - Purpose: Handles registration and login logic: checks username/email uniqueness, hashes passwords, validates credentials, returns JWT tokens.
+      - Collaborators: `UserRepository`, `JwtUtil`, `PasswordUtils`.
 
   - repository/
-    - ProjectRepository.java
-      - Purpose: Data access layer. Extends `JpaRepository<Project, Long>` to provide CRUD operations for `Project` entities.
-      - Responsibilities: Persistence operations via Spring Data JPA.
-      - Collaborators: `Project` entity.
+    - ProjectRepository.java — JPA repository for `Project`.
+    - UserRepository.java — JPA repository for `User` (findByUsername, findByEmail, existsByUsername, existsByEmail).
 
   - model/
-    - Project.java
-      - Purpose: JPA entity mapping for the `projects` table.
-      - Responsibilities: Define fields (id, name, description, createdAt), lifecycle callback (`@PrePersist` to populate `createdAt`).
-      - Collaborators: JPA/Hibernate and `ProjectRepository`.
+    - Project.java — JPA entity for project table.
+    - User.java
+      - Purpose: JPA entity for application users.
+      - Fields: id, name, username (unique), email (unique), passwordHash.
 
   - dto/
-    - ProjectRequest.java
-      - Purpose: Input DTO used when creating a project.
-      - Responsibilities: Carry request data and validate fields (e.g., `@NotBlank`, `@Size`).
-      - Collaborators: `ProjectController`, `ProjectService`.
-
-    - ProjectResponse.java
-      - Purpose: Output DTO returned by the API.
-      - Responsibilities: Represent the public shape of a project (id, name, description, createdAt).
-      - Collaborators: `ProjectController`, `ProjectService`.
+    - ProjectRequest / ProjectResponse — project input/output DTOs.
+    - RegisterRequest — request DTO for registration (name, username, email, password).
+    - LoginRequest — request DTO for login (username or email + password).
 
   - exception/
-    - ResourceNotFoundException.java
-      - Purpose: Custom runtime exception annotated with `@ResponseStatus(HttpStatus.NOT_FOUND)`.
-      - Responsibilities: Thrown when a requested resource (project) is not found.
-      - Collaborators: `ProjectService`, `GlobalExceptionHandler`.
+    - ResourceNotFoundException.java — 404 wrapper.
+    - GlobalExceptionHandler.java — centralizes validation and not-found responses.
 
-    - GlobalExceptionHandler.java
-      - Purpose: Centralized exception handling using `@ControllerAdvice`.
-      - Responsibilities: Translate `MethodArgumentNotValidException` (validation failures) into HTTP 400 with a map of field -> message; translate `ResourceNotFoundException` into HTTP 404 with an error message.
-      - Collaborators: Spring MVC, exceptions thrown by controllers/services.
+  - security/
+    - JwtUtil.java
+      - Purpose: Minimal, self-contained JWT helper (HMAC-SHA256) implemented without external JWT libs. Generates tokens with claims: sub (username), userId, iat, exp.
+      - Notes: Uses `jwt.secret` and `jwt.expiration-ms` from `application.properties`.
+    - PasswordUtils.java
+      - Purpose: PBKDF2 password hashing/verification utility. Returns/reads `iterations:salt:hash` format.
+    - JwtAuthenticationFilter.java
+      - Purpose: Servlet filter that validates Bearer JWTs on incoming requests and sets a request attribute `authenticatedUser` when valid.
+      - Notes: This is a lightweight approach that does not depend on Spring Security types; it registers via `SecurityConfig`.
+    - SecurityConfig.java
+      - Purpose: Registers the `JwtAuthenticationFilter` as a servlet filter for all routes.
 
-- src/main/resources/
-  - application.properties — configuration (database, ports, profiles).
-  - static/ and templates/ — (currently present but may be unused) for static assets or server-side templates.
-
-- test/
-  - Integration and unit tests: `ProjectControllerIntegrationTest`, `BackendApplicationTests`.
-
-- pom.xml — Maven build definition and dependencies.
-- mvnw, mvnw.cmd and .mvn/ — Maven wrapper (included to run builds without requiring Maven installed globally).
+- src/main/resources/application.properties — contains H2 config, JWT properties, and commented MySQL instructions.
 
 API Endpoints (exposed by ProjectController)
 --------------------------------------------
@@ -89,6 +77,40 @@ API Endpoints (exposed by ProjectController)
   - Description: Get a single project by id.
   - Responses: 200 OK with `ProjectResponse` or 404 Not Found when not present.
 
+Auth API (summary)
+------------------
+- POST /auth/register
+  - Request: { "name": "Krisha", "email": "krisha@example.com", "username":"krish123", "password": "mypassword123" }
+  - Success: 201 Created
+    { "message": "User registered successfully", "status":"SUCCESS", "userId": <id> }
+  - Error: 400 Bad Request
+    { "message": "Username already in use" | "Email already in use", "status":"FAILED" }
+
+- POST /auth/login
+  - Request: { "username": "Krisha123", "email": "krishna@example.com", "password": "mypassword123" }
+    (provide either `username` OR `email` plus `password`)
+  - Success: 200 OK
+    { "message": "User logged in successfully", "status":"SUCCESS", "token": "<jwt>" }
+  - Error: 401 Unauthorized
+    { "message": "Invalid Credentials", "status":"FAILED" }
+
+- GET /auth/isUserLoggedIn
+  - Header: Authorization: Bearer <token>
+  - Success (valid token): { "message":"Token valid", "status":"SUCCESS", "loggedIn": true, "userId": <id> }
+  - Error (missing/invalid): 401 Unauthorized with { "message":"No token provided" | "Invalid token", "status":"FAILED", "loggedIn": false }
+
+Notes about JWT and passwords
+-----------------------------
+- `JwtUtil` included is a minimal implementation for development and testing only. For production use, prefer a battle-tested library (e.g., JJWT or Nimbus) and store the secret securely (environment variable or secrets manager), ensure the secret is long enough (>= 256 bits for HS256), and rotate it regularly.
+- `PasswordUtils` uses PBKDF2WithHmacSHA256 with salt and iterations; adjust iterations to match your threat model and hardware.
+
+Switching to MySQL
+------------------
+- `application.properties` contains commented example MySQL properties. To switch:
+  1) Uncomment and configure the MySQL datasource URL/credentials.
+  2) Set `spring.jpa.database-platform` to `org.hibernate.dialect.MySQL8Dialect` (or appropriate dialect).
+  3) Ensure MySQL is running and accessible.
+
 Build & run
 -----------
 From the project root (this repository contains the Maven wrapper):
@@ -103,22 +125,34 @@ Or, with global Maven installed:
 mvn clean package
 mvn spring-boot:run
 
-Notes & assumptions
--------------------
-- The application uses Spring Data JPA and expects a datasource. By default the pom includes H2 for runtime; configure `application.properties` if you want a persistent MySQL datasource.
-- DTOs are used to decouple entity from API representation. Validation annotations are on `ProjectRequest`.
-- Global exception handler centralizes validation and not-found responses.
-
-Where to extend
+Testing the APIs
 ----------------
-- Add update/delete endpoints in `ProjectController` and corresponding service methods.
-- Add DTO mappers or use MapStruct for more complex mapping logic.
-- Add service-level validation or business rules in `ProjectService`.
+Examples (use Postman or curl):
 
-Contact / Troubleshooting
--------------------------
-If you see compilation or mapping errors when running, ensure your Java SDK version is compatible (pom specifies Java 21) and run the Maven wrapper (`mvnw`) from the project root.
+POST register
+```bash
+curl -X POST http://localhost:8080/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Krisha","username":"krish123","email":"krisha@example.com","password":"mypassword123"}'
+```
 
+POST login
+```bash
+curl -X POST http://localhost:8080/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"krish123","password":"mypassword123"}'
+```
 
-(last updated: automated README generated)
+GET isUserLoggedIn
+```bash
+curl -X GET http://localhost:8080/auth/isUserLoggedIn \
+  -H "Authorization: Bearer <token>"
+```
 
+Next steps & recommendations
+----------------------------
+- Add integration tests for the auth flow (happy path + edge cases).
+- Consider switching to a standard JWT library and re-introducing Spring Security for robust role-based access control.
+- Store JWT secret outside of source code (env var / secrets manager).
+
+(README updated to include authentication section.)

@@ -2,7 +2,7 @@ package com.UMLStudio.backend.controller;
 
 import com.UMLStudio.backend.dto.ProjectRequest;
 import com.UMLStudio.backend.dto.ProjectResponse;
-import com.UMLStudio.backend.service.ProjectService;
+import com.UMLStudio.backend.service.ProjectServicePort;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,9 +14,9 @@ import java.util.List;
 @RequestMapping("/api/projects")
 public class ProjectController {
 
-    private final ProjectService projectService;
+    private final ProjectServicePort projectService;
 
-    public ProjectController(ProjectService projectService) {
+    public ProjectController(ProjectServicePort projectService) {
         this.projectService = projectService;
     }
 
@@ -38,4 +38,3 @@ public class ProjectController {
         return ResponseEntity.ok(response);
     }
 }
-
