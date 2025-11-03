@@ -14,7 +14,7 @@ import com.UMLStudio.backend.model.ProjectAccess;
 public interface ProjectAccessRepository extends JpaRepository<ProjectAccess, Long> {
 
     List<ProjectAccess> findByUserId(Long userId);
-    @Query("SELECT p.accessPolicy FROM ProjectAccessTable p WHERE p.userId = :userId AND p.projectId = :projectId")
+    @Query("SELECT p.accessPolicy FROM ProjectAccess p WHERE p.userId = :userId AND p.projectId = :projectId")
     AccessPolicy findAccessPolicyByUserIdAndProjectId(@Param("userId") Long userId,@Param("projectId") Long projectId);
 
 }
