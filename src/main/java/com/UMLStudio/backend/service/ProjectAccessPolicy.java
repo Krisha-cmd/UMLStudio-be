@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class ProjectAccessPolicyFactory {
+public class ProjectAccessPolicy {
 
     private final DeveloperPolicy developerPolicy;
     private final ViewerPolicy viewerPolicy;
