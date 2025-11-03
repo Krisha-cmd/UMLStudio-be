@@ -1,15 +1,30 @@
 package com.UMLStudio.backend.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.time.LocalDateTime;
+
+import com.fasterxml.jackson.databind.JsonNode;
 
 @Entity
 @Table(name = "projects")
-public class Project {
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class Project{
+
+    public Project(String name, String description) {
+        this.name=name;
+        this.description=description;
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "project_id")
+    private Long projectId;
 
     @Column(nullable = false)
     private String name;
@@ -20,49 +35,8 @@ public class Project {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
-    public Project() {
-    }
+    @Column(name = "project_details")
+    private JsonNode projectDetails;
 
-    public Project(String name, String description) {
-        this.name = name;
-        this.description = description;
-    }
-
-    @PrePersist
-    protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
 }
 
