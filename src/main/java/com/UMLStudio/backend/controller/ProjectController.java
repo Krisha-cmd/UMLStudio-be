@@ -22,6 +22,8 @@ import org.springframework.web.bind.annotation.*;
 import java.net.http.HttpRequest;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -47,11 +49,28 @@ public class ProjectController {
     //     return ResponseEntity.ok(list);
     // }
  
-    // @GetMapping("/{id}")
-    // public ResponseEntity<ProjectResponse> getProject(@PathVariable Long id) {
-    //     ProjectResponse response = projectService.getProject(id);
-    //     return ResponseEntity.ok(response);
-    // }
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getProject(@PathVariable Long projectId) {
+        try{
+            User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            if(user == null){
+                return ResponseEntity.status(401).body(new ApiResponse("FAILED","invalid or missing token",null));
+            }
+            Long userId=user.getUserId();
+            Optional<ProjectResponse> isProject=projectService.getProject(projectId);
+            if(isProject.isEmpty()){
+                return ResponseEntity.status(404).body(new ApiResponse("FAILED","Project not found for the given ID.",null));
+            }
+            if(projectAccessManager.hasAccess(userId, projectId)){
+                ProjectResponse project=isProject.get();
+                return ResponseEntity.ok().body(new ApiResponse("SUCCESS","Fetched Project Details Successfully!",project));
+            }
+            return ResponseEntity.status(403).body(new ApiResponse("FAILED","Authenticated user does not have permission to create or modify the project",null));
+        }
+        catch(Exception e){
+            return ResponseEntity.status(500).body(new ApiResponse("FAILED","Something went wrong while fetching project list",null));
+        }
+    }
 
     @GetMapping("/getProjectList")
     public ResponseEntity<?> getProjectList(HttpServletRequest request){
@@ -82,18 +101,12 @@ public class ProjectController {
             else if(project.getProjectDetails()==null || project.getProjectName()==null){
                 return ResponseEntity.badRequest().body(new ApiResponse("FAILED"," Invalid or incomplete project data provided.",null));
             }
-            else if(!projectService.getProject(project.getProjectId()).isPresent()){
-                return ResponseEntity.status(404).body(new ApiResponse("FAILED","Project not found for the given ID.",null));
+            else if(projectService.getProject(project.getProjectId()).isEmpty()){
+                return ResponseEntity.ok().body(new ApiResponse("SUCCESS","Project Saved Successfully",projectService.createProject(project)));
             }
             Long userId=user.getUserId();
             if(projectAccessManager.hasAccess(userId, project.getProjectId())){
-                ProjectResponse response;
-                if(project.getProjectId()==null){
-                    response=projectService.createProject(project);
-                }
-                else{
-                    response=projectService.updateProject(project);
-                }    
+                ProjectResponse response=projectService.updateProject(project);    
                 return ResponseEntity.ok().body(new ApiResponse("SUCCESS","Project Saved Successfully",response.getProjectId()));
             }
             return ResponseEntity.status(403).body(new ApiResponse("FAILED","Authenticated user does not have permission to create or modify the project",null));
