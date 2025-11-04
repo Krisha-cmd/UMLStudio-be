@@ -1,25 +1,34 @@
 package com.UMLStudio.backend.service;
 
+import com.UMLStudio.backend.Utils.AccessPolicy;
+import com.UMLStudio.backend.dto.ProjectDto;
 import com.UMLStudio.backend.dto.ProjectRequest;
 import com.UMLStudio.backend.dto.ProjectResponse;
 import com.UMLStudio.backend.exception.ResourceNotFoundException;
 import com.UMLStudio.backend.model.Project;
+import com.UMLStudio.backend.model.ProjectAccess;
+import com.UMLStudio.backend.repository.ProjectAccessRepository;
+import com.UMLStudio.backend.repository.interfaces.ProjectAccessRepositoryPort;
 import com.UMLStudio.backend.repository.interfaces.ProjectRepositoryPort;
+import com.UMLStudio.backend.service.interfaces.ProjectAccessManagerPort;
 import com.UMLStudio.backend.service.interfaces.ProjectServicePort;
 
+import lombok.RequiredArgsConstructor;
+
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class ProjectService implements ProjectServicePort {
 
     private final ProjectRepositoryPort projectRepository;
-
-    public ProjectService(ProjectRepositoryPort projectRepository) {
-        this.projectRepository = projectRepository;
-    }
+    private final ModelMapper modelMapper;
 
     @Override
     public ProjectResponse createProject(ProjectRequest request) {
@@ -29,11 +38,11 @@ public class ProjectService implements ProjectServicePort {
     }
 
     @Override
-    public List<ProjectResponse> listProjects() {
-        return projectRepository.findAll()
-                .stream()
-                .map(this::mapToResponse)
-                .collect(Collectors.toList());
+    public List<ProjectDto> listProjects(Long userId) {
+         return projectRepository.findAllByUserId(userId)
+        .stream()
+        .map((entity)->modelMapper.map(entity, ProjectDto.class))
+        .toList();
     }
 
     @Override
@@ -44,6 +53,6 @@ public class ProjectService implements ProjectServicePort {
     }
 
     private ProjectResponse mapToResponse(Project p) {
-        return new ProjectResponse(p.getProjectId(), p.getName(), p.getDescription(), p.getCreatedAt());
+        return new ProjectResponse(p.getProjectId(), p.getName(), p.getProjectDescription(), p.getCreatedAt());
     }
 }

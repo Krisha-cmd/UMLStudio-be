@@ -1,10 +1,7 @@
 package com.UMLStudio.backend.service.interfaces;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-
 import com.UMLStudio.backend.dto.ProjectDto;
 import com.UMLStudio.backend.dto.ProjectRequest;
 import com.UMLStudio.backend.model.Project;

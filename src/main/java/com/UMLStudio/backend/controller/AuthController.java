@@ -3,7 +3,8 @@ package com.UMLStudio.backend.controller;
 import com.UMLStudio.backend.dto.LoginRequest;
 import com.UMLStudio.backend.dto.RegisterRequest;
 import com.UMLStudio.backend.security.JwtServicePort;
-import com.UMLStudio.backend.service.AuthServicePort;
+import com.UMLStudio.backend.service.interfaces.AuthServicePort;
+
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;

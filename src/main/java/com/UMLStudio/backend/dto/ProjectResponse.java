@@ -10,9 +10,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ProjectResponse {
-    private Long id;
-    private String name;
-    private String description;
-    private LocalDateTime createdAt;
+    private Long projectId;
+    private String projectName;
+    private String projectDescription;
+    private LocalDateTime projectCreatedAt;
 }
 

@@ -18,7 +18,7 @@ public class Project{
 
     public Project(String name, String description) {
         this.name=name;
-        this.description=description;
+        this.projectDescription=description;
     }
 
     @Id
@@ -30,7 +30,7 @@ public class Project{
     private String name;
 
     @Column(length = 2000)
-    private String description;
+    private String projectDescription;
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;

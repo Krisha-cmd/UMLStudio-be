@@ -3,9 +3,11 @@ package com.UMLStudio.backend.service;
 import com.UMLStudio.backend.dto.LoginRequest;
 import com.UMLStudio.backend.dto.RegisterRequest;
 import com.UMLStudio.backend.model.User;
+import com.UMLStudio.backend.repository.interfaces.UserRepositoryPort;
 import com.UMLStudio.backend.security.JwtServicePort;
 import com.UMLStudio.backend.security.PasswordServicePort;
-import com.UMLStudio.backend.repository.UserRepositoryPort;
+import com.UMLStudio.backend.service.interfaces.AuthServicePort;
+
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.HttpStatus;
@@ -52,7 +54,7 @@ public class AuthService implements AuthServicePort {
 
         body.put("message", "User registered successfully");
         body.put("status", "SUCCESS");
-        body.put("userId", saved.getId());
+        body.put("userId", saved.getUserId());
         return ResponseEntity.status(HttpStatus.CREATED).body(body);
 
     }
@@ -84,7 +86,7 @@ public class AuthService implements AuthServicePort {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(body);
         }
 
-        String token = jwtService.generateToken(user.getUsername(), user.getId());
+        String token = jwtService.generateToken(user.getUsername(), user.getUserId());
         body.put("message", "User logged in successfully");
         body.put("status", "SUCCESS");
         body.put("token", token);

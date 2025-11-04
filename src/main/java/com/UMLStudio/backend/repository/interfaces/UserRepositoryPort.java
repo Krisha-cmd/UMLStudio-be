@@ -1,4 +1,4 @@
-package com.UMLStudio.backend.repository;
+package com.UMLStudio.backend.repository.interfaces;
 
 import java.util.Optional;
 

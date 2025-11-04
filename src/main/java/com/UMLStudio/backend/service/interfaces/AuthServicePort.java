@@ -1,4 +1,4 @@
-package com.UMLStudio.backend.service;
+package com.UMLStudio.backend.service.interfaces;
 
 import com.UMLStudio.backend.dto.LoginRequest;
 import com.UMLStudio.backend.dto.RegisterRequest;

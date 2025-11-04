@@ -1,5 +1,7 @@
 package com.UMLStudio.backend.model;
 
+import java.time.LocalDateTime;
+
 import com.UMLStudio.backend.Utils.AccessPolicy;
 
 import jakarta.persistence.Entity;
@@ -18,9 +20,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ProjectAccess {
-    
-    public ProjectAccess(Long userId2, Long projectId2, AccessPolicy viewer) {
-        //TODO Auto-generated constructor stub
+
+    public ProjectAccess(Long userId, Long projectId, AccessPolicy viewer) {
+        this.userId=userId;
+        this.projectId=projectId;
+        this.accessPolicy=viewer;
     }
 
     @Id
@@ -33,4 +37,6 @@ public class ProjectAccess {
 
     @Enumerated(EnumType.STRING)
     private AccessPolicy accessPolicy;
+
+    private LocalDateTime assignedAt;
 }

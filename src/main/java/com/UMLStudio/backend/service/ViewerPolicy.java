@@ -1,8 +1,8 @@
 package com.UMLStudio.backend.service;
 
-import com.UMLStudio.backend.service.interfaces.ProjectAccessPolicy;
+import com.UMLStudio.backend.service.interfaces.ProjectAccessPolicyPort;
 
-public class ViewerPolicy implements ProjectAccessPolicy{
+public class ViewerPolicy implements ProjectAccessPolicyPort{
 
     @Override
     public Boolean canSave() {
