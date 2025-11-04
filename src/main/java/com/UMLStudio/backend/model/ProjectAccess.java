@@ -10,6 +10,8 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -19,12 +21,16 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(
+    name = "project_access",
+    uniqueConstraints = @UniqueConstraint(columnNames = {"userId", "projectId"})
+)
 public class ProjectAccess {
 
-    public ProjectAccess(Long userId, Long projectId, AccessPolicy viewer) {
+    public ProjectAccess(Long userId, Long projectId, AccessPolicy accessPolicy) {
         this.userId=userId;
         this.projectId=projectId;
-        this.accessPolicy=viewer;
+        this.accessPolicy=accessPolicy;
     }
 
     @Id

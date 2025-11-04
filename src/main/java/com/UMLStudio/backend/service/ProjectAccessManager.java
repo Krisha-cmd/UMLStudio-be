@@ -22,7 +22,7 @@ public class ProjectAccessManager implements ProjectAccessManagerPort{
 
     @Override
     public List<ProjectAccess> getAssignedProjects(Long userId) {
-        return projectAccessRepository.findByUserId(userId);
+        return projectAccessRepository.findAllByUserId(userId);
     }
 
     @Override

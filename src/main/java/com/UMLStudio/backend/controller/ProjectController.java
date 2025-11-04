@@ -1,5 +1,6 @@
 package com.UMLStudio.backend.controller;
 
+import com.UMLStudio.backend.dto.ApiResponse;
 import com.UMLStudio.backend.dto.ProjectDto;
 import com.UMLStudio.backend.dto.ProjectRequest;
 import com.UMLStudio.backend.dto.ProjectResponse;
@@ -12,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.http.HttpRequest;
@@ -47,32 +49,19 @@ public class ProjectController {
     @GetMapping("/getProjectList")
     public ResponseEntity<?> getProjectList(HttpServletRequest request){
         try{
-            User user=(User) request.getAttribute("authenticatedUser");
+            User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
             if(user == null){
-                return ResponseEntity.badRequest().body(Map.of(
-                    "status","FAILED",
-                    "message","invalid or missing token"
-                ));
+                return ResponseEntity.badRequest().body(new ApiResponse("FAILED","invalid or missing token",null));
             }
             Long userId=user.getUserId();
             List<ProjectDto> projects=projectService.listProjects(userId);
             if(projects.isEmpty()){
-                return ResponseEntity.status(404).body(Map.of(
-                    "status","FAILED", 
-                    "message" , "No projects found for the given user"
-                ));
+                return ResponseEntity.status(404).body(new ApiResponse("FAILED","No projects found for the given user",null));
             }
-            return ResponseEntity.ok().body(Map.of(
-                "status","SUCCESS",
-                "message","Project list fetched successfully",
-                "result",projects
-            ));
+            return ResponseEntity.ok().body(new ApiResponse("SUCCESS","Project list fetched successfully",projects));
         }
         catch(Exception e){
-            return ResponseEntity.status(500).body(Map.of(
-                "status","FAILED",
-                "message","Something went wrong while fetching project list"
-            ));
+            return ResponseEntity.status(500).body(new ApiResponse("FAILED","Something went wrong while fetching project list",null));
         }
     } 
     
