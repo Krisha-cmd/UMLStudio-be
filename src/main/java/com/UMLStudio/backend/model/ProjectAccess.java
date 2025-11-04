@@ -33,6 +33,13 @@ public class ProjectAccess {
         this.accessPolicy=accessPolicy;
     }
 
+    public ProjectAccess(Long projectId, Long userId, LocalDateTime assignedAt, AccessPolicy accessPolicy) {
+        this.accessPolicy=accessPolicy;
+        this.assignedAt=assignedAt;
+        this.projectId=projectId;
+        this.userId=userId;
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

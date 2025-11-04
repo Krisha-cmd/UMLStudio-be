@@ -1,10 +1,13 @@
 package com.UMLStudio.backend.controller;
 
+import com.UMLStudio.backend.Utils.AccessPolicy;
 import com.UMLStudio.backend.dto.ApiResponse;
 import com.UMLStudio.backend.dto.ProjectDto;
 import com.UMLStudio.backend.dto.ProjectRequest;
 import com.UMLStudio.backend.dto.ProjectResponse;
+import com.UMLStudio.backend.model.Project;
 import com.UMLStudio.backend.model.User;
+import com.UMLStudio.backend.service.interfaces.ProjectAccessManagerPort;
 import com.UMLStudio.backend.service.interfaces.ProjectServicePort;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,6 +22,9 @@ import org.springframework.web.bind.annotation.*;
 import java.net.http.HttpRequest;
 import java.util.List;
 import java.util.Map;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+
 
 
 @RestController
@@ -27,6 +33,7 @@ import java.util.Map;
 public class ProjectController {
 
     private final ProjectServicePort projectService;
+    private final ProjectAccessManagerPort projectAccessManager;
 
     // @PostMapping
     // public ResponseEntity<ProjectResponse> createProject(@Valid @RequestBody ProjectRequest request) {
@@ -51,7 +58,7 @@ public class ProjectController {
         try{
             User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
             if(user == null){
-                return ResponseEntity.badRequest().body(new ApiResponse("FAILED","invalid or missing token",null));
+                return ResponseEntity.status(401).body(new ApiResponse("FAILED","invalid or missing token",null));
             }
             Long userId=user.getUserId();
             List<ProjectDto> projects=projectService.listProjects(userId);
@@ -64,6 +71,39 @@ public class ProjectController {
             return ResponseEntity.status(500).body(new ApiResponse("FAILED","Something went wrong while fetching project list",null));
         }
     } 
+
+    @PostMapping("/saveProject")
+    public ResponseEntity<?> saveProject(@RequestBody ProjectRequest project) {
+        try{
+            User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            if(user == null){
+                return ResponseEntity.status(401).body(new ApiResponse("FAILED","invalid or missing token",null));
+            }
+            else if(project.getProjectDetails()==null || project.getProjectName()==null){
+                return ResponseEntity.badRequest().body(new ApiResponse("FAILED"," Invalid or incomplete project data provided.",null));
+            }
+            else if(!projectService.getProject(project.getProjectId()).isPresent()){
+                return ResponseEntity.status(404).body(new ApiResponse("FAILED","Project not found for the given ID.",null));
+            }
+            Long userId=user.getUserId();
+            if(projectAccessManager.hasAccess(userId, project.getProjectId())){
+                ProjectResponse response;
+                if(project.getProjectId()==null){
+                    response=projectService.createProject(project);
+                }
+                else{
+                    response=projectService.updateProject(project);
+                }    
+                return ResponseEntity.ok().body(new ApiResponse("SUCCESS","Project Saved Successfully",response.getProjectId()));
+            }
+            return ResponseEntity.status(403).body(new ApiResponse("FAILED","Authenticated user does not have permission to create or modify the project",null));
+
+        }
+        catch(Exception e){
+            return ResponseEntity.status(500).body(new ApiResponse("FAILED","Something went wrong while saving the project.",null));
+        }
+    }
+    
     
 
 

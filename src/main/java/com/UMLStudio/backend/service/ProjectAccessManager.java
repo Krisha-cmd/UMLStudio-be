@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import com.UMLStudio.backend.Utils.AccessPolicy;
 import com.UMLStudio.backend.model.ProjectAccess;
 import com.UMLStudio.backend.repository.ProjectAccessRepository;
+import com.UMLStudio.backend.repository.interfaces.ProjectAccessRepositoryPort;
 import com.UMLStudio.backend.service.interfaces.ProjectAccessManagerPort;
 
 import lombok.RequiredArgsConstructor;
@@ -16,7 +17,7 @@ import lombok.RequiredArgsConstructor;
 public class ProjectAccessManager implements ProjectAccessManagerPort{
 
 
-    private final ProjectAccessRepository projectAccessRepository;
+    private final ProjectAccessRepositoryPort projectAccessRepository;
     private final ProjectAccessPolicyContext projectAccessPolicy;
 
 
@@ -29,6 +30,10 @@ public class ProjectAccessManager implements ProjectAccessManagerPort{
     public Boolean hasAccess(Long userId, Long projectId) {
         AccessPolicy policy=projectAccessRepository.findAccessPolicyByUserIdAndProjectId(userId,projectId);
         return projectAccessPolicy.getPolicy(policy).canSave();
+    }
+
+    public ProjectAccess saveAccess(ProjectAccess projectAccess) {
+        return projectAccessRepository.save(projectAccess);
     }
 
 }

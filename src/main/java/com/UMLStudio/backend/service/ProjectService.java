@@ -7,6 +7,7 @@ import com.UMLStudio.backend.dto.ProjectResponse;
 import com.UMLStudio.backend.exception.ResourceNotFoundException;
 import com.UMLStudio.backend.model.Project;
 import com.UMLStudio.backend.model.ProjectAccess;
+import com.UMLStudio.backend.model.User;
 import com.UMLStudio.backend.repository.ProjectAccessRepository;
 import com.UMLStudio.backend.repository.interfaces.ProjectAccessRepositoryPort;
 import com.UMLStudio.backend.repository.interfaces.ProjectRepositoryPort;
@@ -16,11 +17,13 @@ import com.UMLStudio.backend.service.interfaces.ProjectServicePort;
 import lombok.RequiredArgsConstructor;
 
 import org.modelmapper.ModelMapper;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -28,13 +31,17 @@ import java.util.stream.Collectors;
 public class ProjectService implements ProjectServicePort {
 
     private final ProjectRepositoryPort projectRepository;
+    private final ProjectAccessManager projectAccessManager;
     private final ModelMapper modelMapper;
 
     @Override
     public ProjectResponse createProject(ProjectRequest request) {
-        Project project = new Project(request.getName(), request.getDescription());
+        Project project = new Project(request.getProjectName(), request.getProjectDescription(),request.getProjectDetails());
         Project saved = projectRepository.save(project);
-        return mapToResponse(saved);
+        User user=(User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Long userId=user.getUserId();
+        projectAccessManager.saveAccess(new ProjectAccess(saved.getProjectId(),userId,saved.getCreatedAt(),AccessPolicy.Developer));
+        return modelMapper.map(saved, ProjectResponse.class);
     }
 
     @Override
@@ -46,13 +53,13 @@ public class ProjectService implements ProjectServicePort {
     }
 
     @Override
-    public ProjectResponse getProject(Long id) {
-        Project project = projectRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Project not found with id " + id));
-        return mapToResponse(project);
+    public Optional<ProjectResponse> getProject(Long id) {
+        Optional<ProjectResponse> project = projectRepository.findById(id).map((entity)->modelMapper.map(entity, ProjectResponse.class));
+        return project;
     }
 
-    private ProjectResponse mapToResponse(Project p) {
-        return new ProjectResponse(p.getProjectId(), p.getName(), p.getProjectDescription(), p.getCreatedAt());
+    @Override
+    public ProjectResponse updateProject(ProjectRequest project) {
+        return modelMapper.map(projectRepository.save(modelMapper.map(project,Project.class)), ProjectResponse.class);
     }
 }
