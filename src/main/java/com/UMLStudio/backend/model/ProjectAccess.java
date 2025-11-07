@@ -2,8 +2,11 @@ package com.UMLStudio.backend.model;
 
 import java.time.LocalDateTime;
 
+import org.hibernate.annotations.CreationTimestamp;
+
 import com.UMLStudio.backend.Utils.AccessPolicy;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -27,17 +30,17 @@ import lombok.NoArgsConstructor;
 )
 public class ProjectAccess {
 
+    // Convenient constructor (auto sets assignedAt = now)
     public ProjectAccess(Long userId, Long projectId, AccessPolicy accessPolicy) {
-        this.userId=userId;
-        this.projectId=projectId;
-        this.accessPolicy=accessPolicy;
+        this(userId, projectId, LocalDateTime.now(), accessPolicy);
     }
 
-    public ProjectAccess(Long projectId, Long userId, LocalDateTime assignedAt, AccessPolicy accessPolicy) {
-        this.accessPolicy=accessPolicy;
-        this.assignedAt=assignedAt;
-        this.projectId=projectId;
-        this.userId=userId;
+    // Main constructor (correct parameter order)
+    public ProjectAccess(Long userId, Long projectId, LocalDateTime assignedAt, AccessPolicy accessPolicy) {
+        this.userId = userId;
+        this.projectId = projectId;
+        this.assignedAt = assignedAt;
+        this.accessPolicy = accessPolicy;
     }
 
     @Id
@@ -50,6 +53,8 @@ public class ProjectAccess {
 
     @Enumerated(EnumType.STRING)
     private AccessPolicy accessPolicy;
-
+    
+    @CreationTimestamp
+    @Column(nullable = false)
     private LocalDateTime assignedAt;
 }

@@ -7,10 +7,10 @@ import org.springframework.stereotype.Repository;
 
 import com.UMLStudio.backend.model.User;
 
-@Repository
-public interface UserRepositoryPort extends JpaRepository<User,Long>{
+public interface UserRepositoryPort{
 
     boolean existsByUsername(String username);
     Optional<User> findByUsername(String username);
+    User save(User user);
      
 }

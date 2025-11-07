@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 
 import com.UMLStudio.backend.Utils.AccessPolicy;
 import com.UMLStudio.backend.model.ProjectAccess;
-import com.UMLStudio.backend.repository.ProjectAccessRepository;
 import com.UMLStudio.backend.repository.interfaces.ProjectAccessRepositoryPort;
 import com.UMLStudio.backend.service.interfaces.ProjectAccessManagerPort;
 
@@ -32,6 +31,7 @@ public class ProjectAccessManager implements ProjectAccessManagerPort{
         return projectAccessPolicy.getPolicy(policy).canSave();
     }
 
+    @Override
     public ProjectAccess saveAccess(ProjectAccess projectAccess) {
         return projectAccessRepository.save(projectAccess);
     }

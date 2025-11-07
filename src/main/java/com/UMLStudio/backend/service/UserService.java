@@ -1,5 +1,6 @@
 package com.UMLStudio.backend.service;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -8,6 +9,7 @@ import java.util.Optional;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
+import com.UMLStudio.backend.Utils.AccessEntry;
 import com.UMLStudio.backend.Utils.AccessPolicy;
 import com.UMLStudio.backend.dto.ProjectDto;
 import com.UMLStudio.backend.dto.ProjectRequest;
@@ -36,11 +38,16 @@ public class UserService implements UserServicePort {
 
     @Override
     public List<ProjectDto> getProjectList(Long userId) {
-        List<ProjectDto> projects=projectService.listProjects(userId);
         List<ProjectAccess> projectAccesses=projectAccessManager.getAssignedProjects(userId);
-        Map<Long,AccessPolicy> map=new HashMap<>();
-        projectAccesses.stream().forEach((entity)->map.put(entity.getProjectId(),entity.getAccessPolicy()));
-        projects.stream().forEach((entity)->entity.setAccessPolicy(map.get(entity.getProjectId())));
+        List<Long> projectIds = projectAccesses.stream().map((entity)->entity.getProjectId()).toList();
+        List<ProjectDto> projects=projectService.listProjects(projectIds);
+        Map<Long,AccessEntry> map=new HashMap<>();
+        projectAccesses.stream().forEach((entity)->map.put(entity.getProjectId(),new AccessEntry(entity.getAccessPolicy(),entity.getAssignedAt())));
+        projects.stream().forEach((entity)->{
+            entity.setUserId(userId);
+            entity.setAccessPolicy(map.get(entity.getProjectId()).getAccessPolicy());
+            entity.setAssignedAt(map.get(entity.getProjectId()).getAssignedAt());
+        });
         return projects;
     }
 

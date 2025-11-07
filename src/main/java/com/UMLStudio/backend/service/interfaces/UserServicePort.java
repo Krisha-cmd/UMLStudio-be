@@ -8,9 +8,9 @@ import com.UMLStudio.backend.model.Project;
 
 public interface UserServicePort {
 
-    public List<ProjectDto> getProjectList(Long userId);
     public Optional<Project> viewProject(Long projectId);
     public Project saveProject(ProjectRequest project);
     public Boolean assignProject(Long projectId,Long userId,Long assigneeId);
-
+    public List<ProjectDto> getProjectList(Long userId);
+    
 }

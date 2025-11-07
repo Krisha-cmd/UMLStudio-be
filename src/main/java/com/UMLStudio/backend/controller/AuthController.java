@@ -40,30 +40,30 @@ public class AuthController {
         return authService.login(request);
     }
 
-    @GetMapping("/isUserLoggedIn")
-    public ResponseEntity<Map<String, Object>> isUserLoggedIn(@RequestHeader(name = "Authorization", required = false) String authHeader) {
-        Map<String, Object> body = new HashMap<>();
-        if (!StringUtils.hasText(authHeader) || !authHeader.startsWith("Bearer ")) {
-            body.put("message", "No token provided");
-            body.put("status", "FAILED");
-            body.put("loggedIn", false);
-            return ResponseEntity.status(401).body(body);
-        }
+    // @GetMapping("/isUserLoggedIn")
+    // public ResponseEntity<Map<String, Object>> isUserLoggedIn(@RequestHeader(name = "Authorization", required = false) String authHeader) {
+    //     Map<String, Object> body = new HashMap<>();
+    //     if (!StringUtils.hasText(authHeader) || !authHeader.startsWith("Bearer ")) {
+    //         body.put("message", "No token provided");
+    //         body.put("status", "FAILED");
+    //         body.put("loggedIn", false);
+    //         return ResponseEntity.status(401).body(body);
+    //     }
 
-        String token = authHeader.substring(7);
-        boolean valid = jwtService.validateToken(token);
-        if (!valid) {
-            body.put("message", "Invalid token");
-            body.put("status", "FAILED");
-            body.put("loggedIn", false);
-            return ResponseEntity.status(401).body(body);
-        }
+    //     String token = authHeader.substring(7);
+    //     boolean valid = jwtService.validateToken(token);
+    //     if (!valid) {
+    //         body.put("message", "Invalid token");
+    //         body.put("status", "FAILED");
+    //         body.put("loggedIn", false);
+    //         return ResponseEntity.status(401).body(body);
+    //     }
 
-        Long userId = jwtService.getUserIdFromToken(token);
-        body.put("message", "Token valid");
-        body.put("status", "SUCCESS");
-        body.put("loggedIn", true);
-        body.put("userId", userId);
-        return ResponseEntity.ok(body);
-    }
+    //     Long userId = jwtService.getUserIdFromToken(token);
+    //     body.put("message", "Token valid");
+    //     body.put("status", "SUCCESS");
+    //     body.put("loggedIn", true);
+    //     body.put("userId", userId);
+    //     return ResponseEntity.ok(body);
+    // }
 }

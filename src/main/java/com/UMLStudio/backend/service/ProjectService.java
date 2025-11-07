@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
 public class ProjectService implements ProjectServicePort {
 
     private final ProjectRepositoryPort projectRepository;
-    private final ProjectAccessManager projectAccessManager;
+    private final ProjectAccessManagerPort projectAccessManager;
     private final ModelMapper modelMapper;
 
     @Override
@@ -40,16 +40,16 @@ public class ProjectService implements ProjectServicePort {
         Project saved = projectRepository.save(project);
         User user=(User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Long userId=user.getUserId();
-        projectAccessManager.saveAccess(new ProjectAccess(saved.getProjectId(),userId,saved.getCreatedAt(),AccessPolicy.Developer));
+        projectAccessManager.saveAccess(new ProjectAccess(userId,saved.getProjectId(),saved.getCreatedAt(),AccessPolicy.Developer));
         return modelMapper.map(saved, ProjectResponse.class);
     }
 
     @Override
-    public List<ProjectDto> listProjects(Long userId) {
-         return projectRepository.findAllByUserId(userId)
-        .stream()
-        .map((entity)->modelMapper.map(entity, ProjectDto.class))
-        .toList();
+    public List<ProjectDto> listProjects(List<Long> projectIds) {
+        return projectRepository.findAllById(projectIds)
+            .stream()
+            .map(project -> modelMapper.map(project, ProjectDto.class))
+            .toList();
     }
 
     @Override

@@ -9,6 +9,7 @@ import com.UMLStudio.backend.model.Project;
 import com.UMLStudio.backend.model.User;
 import com.UMLStudio.backend.service.interfaces.ProjectAccessManagerPort;
 import com.UMLStudio.backend.service.interfaces.ProjectServicePort;
+import com.UMLStudio.backend.service.interfaces.UserServicePort;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -24,9 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-
 
 
 @RestController
@@ -36,6 +34,7 @@ public class ProjectController {
 
     private final ProjectServicePort projectService;
     private final ProjectAccessManagerPort projectAccessManager;
+    private final UserServicePort userService;
 
     // @PostMapping
     // public ResponseEntity<ProjectResponse> createProject(@Valid @RequestBody ProjectRequest request) {
@@ -49,7 +48,7 @@ public class ProjectController {
     //     return ResponseEntity.ok(list);
     // }
  
-    @GetMapping("/{id}")
+    @GetMapping("/{projectId}")
     public ResponseEntity<?> getProject(@PathVariable Long projectId) {
         try{
             User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -73,14 +72,14 @@ public class ProjectController {
     }
 
     @GetMapping("/getProjectList")
-    public ResponseEntity<?> getProjectList(HttpServletRequest request){
+    public ResponseEntity<?> getProjectList(){
         try{
             User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
             if(user == null){
                 return ResponseEntity.status(401).body(new ApiResponse("FAILED","invalid or missing token",null));
             }
             Long userId=user.getUserId();
-            List<ProjectDto> projects=projectService.listProjects(userId);
+            List<ProjectDto> projects=userService.getProjectList(userId);
             if(projects.isEmpty()){
                 return ResponseEntity.status(404).body(new ApiResponse("FAILED","No projects found for the given user",null));
             }
@@ -101,11 +100,14 @@ public class ProjectController {
             else if(project.getProjectDetails()==null || project.getProjectName()==null){
                 return ResponseEntity.badRequest().body(new ApiResponse("FAILED"," Invalid or incomplete project data provided.",null));
             }
-            else if(projectService.getProject(project.getProjectId()).isEmpty()){
+            else if(project.getProjectId()==null){
                 return ResponseEntity.ok().body(new ApiResponse("SUCCESS","Project Saved Successfully",projectService.createProject(project)));
             }
             Long userId=user.getUserId();
             if(projectAccessManager.hasAccess(userId, project.getProjectId())){
+                if (projectService.getProject(project.getProjectId()).isEmpty()) {
+                    return ResponseEntity.status(404).body(new ApiResponse("FAILED", "projectId provided but no matching project exists for update.", null));
+                }
                 ProjectResponse response=projectService.updateProject(project);    
                 return ResponseEntity.ok().body(new ApiResponse("SUCCESS","Project Saved Successfully",response.getProjectId()));
             }
@@ -113,6 +115,7 @@ public class ProjectController {
 
         }
         catch(Exception e){
+            e.printStackTrace();
             return ResponseEntity.status(500).body(new ApiResponse("FAILED","Something went wrong while saving the project.",null));
         }
     }

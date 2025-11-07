@@ -8,6 +8,7 @@ import com.UMLStudio.backend.security.JwtServicePort;
 import com.UMLStudio.backend.security.PasswordServicePort;
 import com.UMLStudio.backend.service.interfaces.AuthServicePort;
 
+import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.HttpStatus;
@@ -26,11 +27,11 @@ public class AuthService implements AuthServicePort {
     private final JwtServicePort jwtService;
     private final PasswordServicePort passwordService;
 
-    public AuthService(UserRepositoryPort userRepository, PasswordServicePort passwordService, JwtServicePort jwtService) {
-        this.userRepository = userRepository;
-        this.passwordService = passwordService;
-        this.jwtService = jwtService;
-    }
+    // public AuthService(UserRepositoryPort userRepository, PasswordServicePort passwordService, JwtServicePort jwtService) {
+    //     this.userRepository = userRepository;
+    //     this.passwordService = passwordService;
+    //     this.jwtService = jwtService;
+    // }
 
     @Override
     public ResponseEntity<Map<String, Object>> register(RegisterRequest request) {
@@ -64,7 +65,7 @@ public class AuthService implements AuthServicePort {
         Map<String, Object> body = new HashMap<>();
 
         // allow login with username or email
-        Optional<User> isUser=Optional.of(null);
+        Optional<User> isUser=Optional.empty();
         if (request.getUsername() != null && !request.getUsername().isBlank()) {
             isUser = userRepository.findByUsername(request.getUsername());
         }
