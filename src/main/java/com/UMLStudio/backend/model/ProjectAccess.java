@@ -30,12 +30,10 @@ import lombok.NoArgsConstructor;
 )
 public class ProjectAccess {
 
-    // Convenient constructor (auto sets assignedAt = now)
     public ProjectAccess(Long userId, Long projectId, AccessPolicy accessPolicy) {
         this(userId, projectId, LocalDateTime.now(), accessPolicy);
     }
 
-    // Main constructor (correct parameter order)
     public ProjectAccess(Long userId, Long projectId, LocalDateTime assignedAt, AccessPolicy accessPolicy) {
         this.userId = userId;
         this.projectId = projectId;

@@ -1,4 +1,5 @@
 # UMLStudio .gitignore - Java / Maven / IDE defaults
+*.env
 
 # Maven output
 /target/
