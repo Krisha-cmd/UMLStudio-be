@@ -30,6 +30,7 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/projects")
 @RequiredArgsConstructor
+@CrossOrigin(originPatterns = "*")
 public class ProjectController {
 
     private final ProjectServicePort projectService;
