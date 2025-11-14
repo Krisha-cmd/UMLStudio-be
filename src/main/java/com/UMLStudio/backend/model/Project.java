@@ -7,6 +7,10 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
 import com.fasterxml.jackson.databind.JsonNode;
 
 @Entity
@@ -17,8 +21,14 @@ import com.fasterxml.jackson.databind.JsonNode;
 public class Project{
 
     public Project(String name, String description) {
-        this.name=name;
-        this.description=description;
+        this.projectName=name;
+        this.projectDescription=description;
+    }
+
+    public Project(String projectName, String projectDescription, JsonNode projectDetails) {
+        this.projectName=projectName;
+        this.projectDescription=projectDescription;
+        this.projectDetails=projectDetails;
     }
 
     @Id
@@ -27,15 +37,18 @@ public class Project{
     private Long projectId;
 
     @Column(nullable = false)
-    private String name;
+    private String projectName;
 
     @Column(length = 2000)
-    private String description;
+    private String projectDescription;
 
-    @Column(name = "created_at", nullable = false)
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "project_details")
+
+    @Column(name = "project_details", columnDefinition = "jsonb")
+    @JdbcTypeCode(SqlTypes.JSON)
     private JsonNode projectDetails;
 
 }

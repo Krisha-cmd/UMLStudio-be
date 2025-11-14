@@ -1,8 +1,11 @@
 package com.UMLStudio.backend.service;
 
-import com.UMLStudio.backend.service.interfaces.ProjectAccessPolicy;
+import org.springframework.stereotype.Service;
 
-public class ViewerPolicy implements ProjectAccessPolicy{
+import com.UMLStudio.backend.service.interfaces.ProjectAccessPolicyPort;
+
+@Service
+public class ViewerPolicy implements ProjectAccessPolicyPort{
 
     @Override
     public Boolean canSave() {

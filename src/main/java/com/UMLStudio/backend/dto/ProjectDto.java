@@ -17,10 +17,10 @@ public class ProjectDto {
     private long userId;
     private long projectId;
     private AccessPolicy accessPolicy;
-    private String name;
-    private String description;
+    private String projectName;
+    private String projectDescription;
     private LocalDateTime createdAt;
     private JsonNode projectDetails;
-
+    private LocalDateTime assignedAt;
 
 }

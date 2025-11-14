@@ -9,11 +9,12 @@ import org.springframework.stereotype.Repository;
 
 import com.UMLStudio.backend.Utils.AccessPolicy;
 import com.UMLStudio.backend.model.ProjectAccess;
+import com.UMLStudio.backend.repository.interfaces.ProjectAccessRepositoryPort;
 
 @Repository
-public interface ProjectAccessRepository extends JpaRepository<ProjectAccess, Long> {
+public interface ProjectAccessRepository extends JpaRepository<ProjectAccess, Long>,ProjectAccessRepositoryPort {
 
-    List<ProjectAccess> findByUserId(Long userId);
+    List<ProjectAccess> findAllByUserId(Long userId);
     @Query("SELECT p.accessPolicy FROM ProjectAccess p WHERE p.userId = :userId AND p.projectId = :projectId")
     AccessPolicy findAccessPolicyByUserIdAndProjectId(@Param("userId") Long userId,@Param("projectId") Long projectId);
 

@@ -9,4 +9,6 @@ public interface ProjectAccessManagerPort {
     
     Boolean hasAccess(Long userId, Long projectId);
 
+    ProjectAccess saveAccess(ProjectAccess projectAccess);
+
 }

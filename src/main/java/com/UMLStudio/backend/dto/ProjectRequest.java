@@ -19,12 +19,10 @@ public class ProjectRequest {
     
     @NotBlank(message = "name is required")
     @Size(max = 255)
-    private String name;
+    private String projectName;
 
     @Size(max = 2000)
-    private String description;
-
-    private AccessPolicy accessPolicy;
+    private String projectDescription;
 
     private JsonNode projectDetails;
 
